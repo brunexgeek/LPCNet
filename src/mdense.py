@@ -1,11 +1,12 @@
 from keras import backend as K
 from keras.engine.topology import Layer
-from keras.layers import activations, initializers, regularizers, constraints, InputSpec
+from keras import initializers, regularizers, constraints, activations
+from keras.layers import InputSpec
 import numpy as np
 import math
 
 class MDense(Layer):
-    
+
     def __init__(self, outputs,
                  channels=2,
                  activation=None,
