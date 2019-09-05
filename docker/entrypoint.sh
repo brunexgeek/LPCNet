@@ -1,3 +1,3 @@
 #!/bin/bash -x
 
-cd /lpcnet && /bin/bash
+cd /lpcnet && mkdir -p /lpcnet/checkpoints && /bin/bash
