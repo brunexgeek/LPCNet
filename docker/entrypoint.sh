@@ -1,3 +1,9 @@
 #!/bin/bash -x
 
-cd /lpcnet && mkdir -p /lpcnet/checkpoints && /bin/bash
+cd /lpcnet
+
+if [ -z "$1" ]; then
+	/bin/bash
+else
+	$@
+fi
