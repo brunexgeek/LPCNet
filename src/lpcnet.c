@@ -63,17 +63,17 @@ void run_frame_network(LPCNetState *lpcnet, float *condition, float *gru_a_condi
     float dense1_out[FEATURE_DENSE1_OUT_SIZE];
     net = &lpcnet->nnet;
     RNN_COPY(in, features, NB_FEATURES);
-    compute_embedding(&embed_pitch, &in[NB_FEATURES], pitch);
-    compute_conv1d(&feature_conv1, conv1_out, net->feature_conv1_state, in);
+    compute_embedding(&defaultModel.embed_pitch, &in[NB_FEATURES], pitch);
+    compute_conv1d(&defaultModel.feature_conv1, conv1_out, net->feature_conv1_state, in);
     if (lpcnet->frame_count < FEATURE_CONV1_DELAY) RNN_CLEAR(conv1_out, FEATURE_CONV1_OUT_SIZE);
-    compute_conv1d(&feature_conv2, conv2_out, net->feature_conv2_state, conv1_out);
+    compute_conv1d(&defaultModel.feature_conv2, conv2_out, net->feature_conv2_state, conv1_out);
     celt_assert(FRAME_INPUT_SIZE == FEATURE_CONV2_OUT_SIZE);
     if (lpcnet->frame_count < FEATURES_DELAY) RNN_CLEAR(conv2_out, FEATURE_CONV2_OUT_SIZE);
     memmove(lpcnet->old_input[1], lpcnet->old_input[0], (FEATURES_DELAY-1)*FRAME_INPUT_SIZE*sizeof(in[0]));
     memcpy(lpcnet->old_input[0], in, FRAME_INPUT_SIZE*sizeof(in[0]));
-    compute_dense(&feature_dense1, dense1_out, conv2_out);
-    compute_dense(&feature_dense2, condition, dense1_out);
-    compute_dense(&gru_a_dense_feature, gru_a_condition, condition);
+    compute_dense(&defaultModel.feature_dense1, dense1_out, conv2_out);
+    compute_dense(&defaultModel.feature_dense2, condition, dense1_out);
+    compute_dense(&defaultModel.gru_a_dense_feature, gru_a_condition, condition);
     if (lpcnet->frame_count < 1000) lpcnet->frame_count++;
 }
 
@@ -82,15 +82,15 @@ void run_sample_network(NNetState *net, float *pdf, const float *condition, cons
     float gru_a_input[3*GRU_A_STATE_SIZE];
     float in_b[GRU_A_STATE_SIZE+FEATURE_DENSE2_OUT_SIZE];
     RNN_COPY(gru_a_input, gru_a_condition, 3*GRU_A_STATE_SIZE);
-    accum_embedding(&gru_a_embed_sig, gru_a_input, last_sig);
-    accum_embedding(&gru_a_embed_pred, gru_a_input, pred);
-    accum_embedding(&gru_a_embed_exc, gru_a_input, last_exc);
+    accum_embedding(&defaultModel.gru_a_embed_sig, gru_a_input, last_sig);
+    accum_embedding(&defaultModel.gru_a_embed_pred, gru_a_input, pred);
+    accum_embedding(&defaultModel.gru_a_embed_exc, gru_a_input, last_exc);
     /*compute_gru3(&gru_a, net->gru_a_state, gru_a_input);*/
-    compute_sparse_gru(&sparse_gru_a, net->gru_a_state, gru_a_input);
+    compute_sparse_gru(&defaultModel.sparse_gru_a, net->gru_a_state, gru_a_input);
     RNN_COPY(in_b, net->gru_a_state, GRU_A_STATE_SIZE);
     RNN_COPY(&in_b[GRU_A_STATE_SIZE], condition, FEATURE_DENSE2_OUT_SIZE);
-    compute_gru2(&gru_b, net->gru_b_state, in_b);
-    compute_mdense(&dual_fc, pdf, net->gru_b_state);
+    compute_gru2(&defaultModel.gru_b, net->gru_b_state, in_b);
+    compute_mdense(&defaultModel.dual_fc, pdf, net->gru_b_state);
 }
 
 LPCNET_EXPORT int lpcnet_get_size()

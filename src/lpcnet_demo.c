@@ -33,21 +33,23 @@
 #include "arch.h"
 #include "lpcnet.h"
 #include "freq.h"
+#include "nnet_data.h"
 
 #define MODE_ENCODE 0
 #define MODE_DECODE 1
 #define MODE_FEATURES 2
 #define MODE_SYNTHESIS 3
 
+
 int main(int argc, char **argv) {
     int mode;
     FILE *fin, *fout;
-    if (argc != 4)
+    if (argc != 5)
     {
-        fprintf(stderr, "usage: lpcnet_demo -encode <input.pcm> <compressed.lpcnet>\n");
-        fprintf(stderr, "       lpcnet_demo -decode <compressed.lpcnet> <output.pcm>\n");
-        fprintf(stderr, "       lpcnet_demo -features <input.pcm> <features.f32>\n");
-        fprintf(stderr, "       lpcnet_demo -synthesis <features.f32> <output.pcm>\n");
+        fprintf(stderr, "usage: lpcnet_demo -encode <input.pcm> <compressed.lpcnet> <model>\n");
+        fprintf(stderr, "       lpcnet_demo -decode <compressed.lpcnet> <output.pcm> <model>\n");
+        fprintf(stderr, "       lpcnet_demo -features <input.pcm> <features.f32> <model>\n");
+        fprintf(stderr, "       lpcnet_demo -synthesis <features.f32> <output.pcm> <model>\n");
         return 0;
     }
     if (strcmp(argv[1], "-encode") == 0) mode=MODE_ENCODE;
@@ -68,6 +70,9 @@ int main(int argc, char **argv) {
 	fprintf(stderr, "Can't open %s\n", argv[3]);
 	exit(1);
     }
+
+    nnet_data_load(argv[4], &defaultModel);
+    //exit(0);
 
     if (mode == MODE_ENCODE) {
         LPCNetEncState *net;

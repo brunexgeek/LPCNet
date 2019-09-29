@@ -1,7 +1,16 @@
 project(LPCNet)
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -g -mavx2 -mfma -Wextra")
+if (UNIX)
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wfatal-errors -pedantic -std=gnu99 -Wl,--no-undefined -fPIC -Wall -Wextra -Wconversion -Werror=return-type -Werror=implicit-function-declaration")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -pedantic -std=c++11 -Wl,--no-undefined -fPIC -Wall -Wextra -Wconversion -Werror=return-type -Werror=implicit-function-declaration")
+
+    set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} -s -O3 -mavx2 -mfma")
+    set(CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS_RELEASE} -s -O3 -mavx2 -mfma")
+
+    set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS_DEBUG} -g -O0 -mavx2 -mfma")
+    set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -mavx2 -mfma")
+endif()
 
 add_library(liblpcnet STATIC
     src/common.c
@@ -9,8 +18,8 @@ add_library(liblpcnet STATIC
     src/lpcnet_dec.c
     src/lpcnet_enc.c
     src/nnet.c
-    model/nnet_data.c
-    model/ceps_codebooks.c
+    src/nnet_data.c
+    src/ceps_codebooks.c
     src/pitch.c
     src/freq.c
     src/kiss_fft.c
@@ -37,7 +46,7 @@ add_executable(dump_data
     src/celt_lpc.c
     src/lpcnet_dec.c
     src/lpcnet_enc.c
-    model/ceps_codebooks.c)
+    src/ceps_codebooks.c)
 target_link_libraries(dump_data liblpcnet m)
 target_include_directories(dump_data
     PRIVATE "model"
