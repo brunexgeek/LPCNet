@@ -83,6 +83,6 @@ typedef struct {
 
 extern NNetModel defaultModel;
 
-void nnet_data_load( const char *fileName, NNetModel *model );
+int nnet_data_load( const char *fileName, NNetModel *model );
 
 #endif // NNET_DATA_H

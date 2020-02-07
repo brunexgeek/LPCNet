@@ -41,7 +41,7 @@ float *nnet_data_read_floats( FILE *file, const NNetHeader *header )
 }
 
 
-void nnet_data_load( const char *fileName, NNetModel *model )
+int nnet_data_load( const char *fileName, NNetModel *model )
 {
     NNetHeader header;
     FILE *file = NULL;
@@ -51,7 +51,7 @@ void nnet_data_load( const char *fileName, NNetModel *model )
     printf("Loading '%s'\n", fileName);
 
     file = fopen(fileName, "rb");
-    if (file == NULL) return;
+    if (file == NULL) return -1;
 
     while (nnet_data_read_entry(file, &header))
     {
@@ -201,4 +201,5 @@ void nnet_data_load( const char *fileName, NNetModel *model )
     model->sparse_gru_a.reset_after = 1;
 
     fclose(file);
+    return 0;
 }

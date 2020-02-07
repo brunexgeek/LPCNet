@@ -30,6 +30,8 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
+#include <sys/stat.h>
 #include "arch.h"
 #include "lpcnet.h"
 #include "freq.h"
@@ -39,6 +41,27 @@
 #define MODE_DECODE 1
 #define MODE_FEATURES 2
 #define MODE_SYNTHESIS 3
+
+
+
+static uint32_t now()
+{
+    #ifdef __WINDOWS__
+
+    struct __timeb32 current;
+    _ftime32_s(&current);
+    return (uint32_t) ((current.time * 1000) + current.millitm);
+
+    #else
+
+    struct timespec current;
+    clock_gettime(CLOCK_MONOTONIC, &current);
+    return (uint32_t) ((current.tv_sec * 1000) + current.tv_nsec / (1000 * 1000));
+
+    #endif
+}
+
+
 
 
 int main(int argc, char **argv) {
@@ -71,9 +94,6 @@ int main(int argc, char **argv) {
 	exit(1);
     }
 
-    nnet_data_load(argv[4], &defaultModel);
-    //exit(0);
-
     if (mode == MODE_ENCODE) {
         LPCNetEncState *net;
         net = lpcnet_encoder_create();
@@ -87,6 +107,7 @@ int main(int argc, char **argv) {
         }
         lpcnet_encoder_destroy(net);
     } else if (mode == MODE_DECODE) {
+        nnet_data_load(argv[4], &defaultModel);
         LPCNetDecState *net;
         net = lpcnet_decoder_create();
         while (1) {
@@ -111,19 +132,43 @@ int main(int argc, char **argv) {
         }
         lpcnet_encoder_destroy(net);
     } else if (mode == MODE_SYNTHESIS) {
+        if (nnet_data_load(argv[4], &defaultModel))
+        {
+            perror("Unable to load model");
+            return 1;
+        }
+
+        struct stat info;
+        if (stat(argv[2], &info))
+        {
+            perror(argv[2]);
+            return 1;
+        }
+
+        float *in_features = (float*) malloc(info.st_size);
+        float *end_features = in_features + info.st_size / sizeof(float);
+        if (!in_features) return 1;
+
+        fread(in_features, 1, info.st_size, fin);
+
         LPCNetState *net;
         net = lpcnet_create();
-        while (1) {
-            float in_features[NB_TOTAL_FEATURES];
+        uint32_t ticks = now();
+        uint64_t frames = 0;
+        while (in_features < end_features) {
             float features[NB_FEATURES];
             short pcm[LPCNET_FRAME_SIZE];
-            fread(in_features, sizeof(features[0]), NB_TOTAL_FEATURES, fin);
-            if (feof(fin)) break;
             RNN_COPY(features, in_features, NB_FEATURES);
             RNN_CLEAR(&features[18], 18);
             lpcnet_synthesize(net, features, pcm, LPCNET_FRAME_SIZE);
             fwrite(pcm, sizeof(pcm[0]), LPCNET_FRAME_SIZE, fout);
+            frames += LPCNET_FRAME_SIZE;
+            in_features += NB_TOTAL_FEATURES;
         }
+        ticks = now() - ticks;
+        printf("Elapsed time: %d ms\n", ticks);
+        printf("  Audio time: %d ms\n", (frames / 16));
+        printf(" Performance: %.2f:1", (frames / 16.0F) / ticks );
         lpcnet_destroy(net);
     } else {
         fprintf(stderr, "unknown action\n");
