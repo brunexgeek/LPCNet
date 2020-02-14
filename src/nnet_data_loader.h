@@ -1,5 +1,5 @@
-#ifndef NNET_DATA_H
-#define NNET_DATA_H
+#ifndef NNET_DATA_LOADER_H
+#define NNET_DATA_LOADER_H
 
 
 #include "nnet.h"
@@ -58,20 +58,20 @@
 #define MAX_MDENSE_TMP 512
 
 typedef struct  {
-    EmbeddingLayer gru_a_embed_sig;
-    EmbeddingLayer gru_a_embed_pred;
-    EmbeddingLayer gru_a_embed_exc;
-    DenseLayer gru_a_dense_feature;
-    EmbeddingLayer embed_pitch;
-    Conv1DLayer feature_conv1;
-    Conv1DLayer feature_conv2;
-    DenseLayer feature_dense1;
-    EmbeddingLayer embed_sig;
-    DenseLayer feature_dense2;
-    GRULayer gru_a;
-    GRULayer gru_b;
-    MDenseLayer dual_fc;
-    SparseGRULayer sparse_gru_a;
+    EmbeddingLayer *gru_a_embed_sig;
+    EmbeddingLayer *gru_a_embed_pred;
+    EmbeddingLayer *gru_a_embed_exc;
+    DenseLayer *gru_a_dense_feature;
+    EmbeddingLayer *embed_pitch;
+    Conv1DLayer *feature_conv1;
+    Conv1DLayer *feature_conv2;
+    DenseLayer *feature_dense1;
+    EmbeddingLayer *embed_sig;
+    DenseLayer *feature_dense2;
+    GRULayer *gru_a;
+    GRULayer *gru_b;
+    MDenseLayer *dual_fc;
+    SparseGRULayer *sparse_gru_a;
 } NNetModel;
 
 typedef struct {
@@ -83,6 +83,8 @@ typedef struct {
 
 extern NNetModel defaultModel;
 
+const NNetModel *nnet_get_model();
+
 int nnet_data_load( const char *fileName, NNetModel *model );
 
-#endif // NNET_DATA_H
+#endif // NNET_DATA_LOADER_H

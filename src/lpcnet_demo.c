@@ -35,7 +35,7 @@
 #include "arch.h"
 #include "lpcnet.h"
 #include "freq.h"
-#include "nnet_data.h"
+//#include "nnet_data_loader.h"
 
 #define MODE_ENCODE 0
 #define MODE_DECODE 1
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "       lpcnet_demo -decode <compressed.lpcnet> <output.pcm> <model>\n");
         fprintf(stderr, "       lpcnet_demo -features <input.pcm> <features.f32> <model>\n");
         fprintf(stderr, "       lpcnet_demo -synthesis <features.f32> <output.pcm> <model>\n");
-        return 0;
+        return 1;
     }
     if (strcmp(argv[1], "-encode") == 0) mode=MODE_ENCODE;
     else if (strcmp(argv[1], "-decode") == 0) mode=MODE_DECODE;
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
         }
         lpcnet_encoder_destroy(net);
     } else if (mode == MODE_DECODE) {
-        nnet_data_load(argv[4], &defaultModel);
+        //nnet_data_load(argv[4], &defaultModel);
         LPCNetDecState *net;
         net = lpcnet_decoder_create();
         while (1) {
@@ -132,11 +132,11 @@ int main(int argc, char **argv) {
         }
         lpcnet_encoder_destroy(net);
     } else if (mode == MODE_SYNTHESIS) {
-        if (nnet_data_load(argv[4], &defaultModel))
+        /*if (nnet_data_load(argv[4], &defaultModel))
         {
             perror("Unable to load model");
             return 1;
-        }
+        }*/
 
         struct stat info;
         if (stat(argv[2], &info))

@@ -37,7 +37,8 @@
 #include "common.h"
 #include "tansig_table.h"
 #include "nnet.h"
-#include "nnet_data.h"
+#include "model.h"
+//#include "nnet_data_loader.h"
 
 #define SOFTMAX_HACK
 
@@ -343,7 +344,7 @@ void compute_embedding(const EmbeddingLayer *layer, float *output, int input)
    for (i=0;i<layer->dim;i++)
    {
       output[i] = layer->embedding_weights[input*layer->dim + i];
-   }    
+   }
 }
 
 void accum_embedding(const EmbeddingLayer *layer, float *output, int input)
@@ -355,7 +356,7 @@ void accum_embedding(const EmbeddingLayer *layer, float *output, int input)
    for (i=0;i<layer->dim;i++)
    {
       output[i] += layer->embedding_weights[input*layer->dim + i];
-   }    
+   }
 }
 
 int sample_from_pdf(const float *pdf, int N, float exp_boost, float pdf_floor)

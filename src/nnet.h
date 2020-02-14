@@ -87,6 +87,23 @@ typedef struct {
   int dim;
 } EmbeddingLayer;
 
+typedef struct  {
+    const EmbeddingLayer *gru_a_embed_sig;
+    const EmbeddingLayer *gru_a_embed_pred;
+    const EmbeddingLayer *gru_a_embed_exc;
+    const DenseLayer *gru_a_dense_feature;
+    const EmbeddingLayer *embed_pitch;
+    const Conv1DLayer *feature_conv1;
+    const Conv1DLayer *feature_conv2;
+    const DenseLayer *feature_dense1;
+    const EmbeddingLayer *embed_sig;
+    const DenseLayer *feature_dense2;
+    const GRULayer *gru_a;
+    const GRULayer *gru_b;
+    const MDenseLayer *dual_fc;
+    const SparseGRULayer *sparse_gru_a;
+} NNetModel;
+
 void compute_activation(float *output, float *input, int N, int activation);
 
 void compute_dense(const DenseLayer *layer, float *output, const float *input);
@@ -108,5 +125,7 @@ void compute_embedding(const EmbeddingLayer *layer, float *output, int input);
 void accum_embedding(const EmbeddingLayer *layer, float *output, int input);
 
 int sample_from_pdf(const float *pdf, int N, float exp_boost, float pdf_floor);
+
+const NNetModel *nnet_get_model();
 
 #endif /* _MLP_H_ */

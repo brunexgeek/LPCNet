@@ -4,7 +4,8 @@
 #include "common.h"
 #include "freq.h"
 #include "lpcnet.h"
-#include "nnet_data.h"
+#include "model.h"
+//#include "nnet_data_loader.h"
 #include "celt_lpc.h"
 
 #define BITS_PER_CHAR 8

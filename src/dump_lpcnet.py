@@ -219,8 +219,8 @@ if len(sys.argv) > 2:
     cfile = sys.argv[2];
     hfile = sys.argv[3];
 else:
-    cfile = 'nnet_data.c'
-    hfile = 'nnet_data.h'
+    cfile = 'model.c'
+    hfile = 'model.h'
 
 
 f = open(cfile, 'w')
@@ -261,8 +261,32 @@ hf.write('#define MAX_MDENSE_TMP {}\n\n'.format(max_mdense_tmp))
 
 hf.write('typedef struct {\n')
 for i, name in enumerate(layer_list):
-    hf.write('  float {}_state[{}_STATE_SIZE];\n'.format(name, name.upper())) 
+    hf.write('  float {}_state[{}_STATE_SIZE];\n'.format(name, name.upper()))
 hf.write('} NNetState;\n')
+
+f.write(
+    '''
+static NNetModel defaultModel =
+{
+    &gru_a_embed_sig,
+    &gru_a_embed_pred,
+    &gru_a_embed_exc,
+    &gru_a_dense_feature,
+    &embed_pitch,
+    &feature_conv1,
+    &feature_conv2,
+    &feature_dense1,
+    &embed_sig,
+    &feature_dense2,
+    &gru_a,
+    &gru_b,
+    &dual_fc,
+    &sparse_gru_a
+};
+
+const NNetModel *nnet_get_model() { return &defaultModel; }
+
+''')
 
 hf.write('\n\n#endif\n')
 
