@@ -4,7 +4,9 @@
 #include "common.h"
 #include "freq.h"
 #include "lpcnet.h"
+#ifndef DUMP_DATA
 #include "model.h"
+#endif
 //#include "nnet_data_loader.h"
 #include "celt_lpc.h"
 
@@ -23,6 +25,8 @@
 
 #define FEATURES_DELAY (FEATURE_CONV1_DELAY + FEATURE_CONV2_DELAY)
 
+#ifndef DUMP_DATA
+
 struct LPCNetState {
     NNetState nnet;
     int last_exc;
@@ -38,6 +42,8 @@ struct LPCNetDecState {
     LPCNetState lpcnet_state;
     float vq_mem[NB_BANDS];
 };
+
+#endif
 
 struct LPCNetEncState{
   float analysis_mem[OVERLAP_SIZE];

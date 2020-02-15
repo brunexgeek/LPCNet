@@ -48,7 +48,8 @@ add_executable(dump_data
     src/lpcnet_dec.c
     src/lpcnet_enc.c
     src/ceps_codebooks.c)
-target_link_libraries(dump_data liblpcnet m)
+target_link_libraries(dump_data m)
+target_compile_definitions(dump_data PRIVATE -DDUMP_DATA=1)
 target_include_directories(dump_data
     PRIVATE "model"
     PRIVATE "src"
