@@ -33,7 +33,7 @@ defs['rnn_units2'] = 16
 defs['checkpoints_dir'] = './checkpoints'
 defs['batch_size'] = 64  # Try reducing batch_size if you run out of memory on your GPU
 defs['epochs'] = 120
-defs['use_gpu'] = False
+defs['use_gpu'] = True
 
 
 import os
@@ -73,7 +73,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.44
 
 set_session(tf.compat.v1.Session(config=config))
 
-model, _, _ = lpcnet.new_lpcnet_model(training=True, use_gpu=defs['use_gpu'])
+model, _, _ = lpcnet.new_lpcnet_model(training=True, use_gpu=defs['use_gpu'], rnn_units1=defs['rnn_units1'], rnn_units2=defs['rnn_units2'])
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'])
 model.summary()
 
