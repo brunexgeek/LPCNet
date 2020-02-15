@@ -25,47 +25,71 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+
+defs = {}
+defs['name'] = 'lpcnet'
+defs['rnn_units1'] = 384
+defs['rnn_units2'] = 16
+defs['checkpoints_dir'] = './checkpoints'
+defs['batch_size'] = 64  # Try reducing batch_size if you run out of memory on your GPU
+defs['epochs'] = 120
+defs['use_gpu'] = False
+
+
+import os
+import sys
+
+if len(sys.argv) != 3:
+    print('Usage: ' + os.path.basename(sys.argv[0]) + ' <feature file> <pcm file>')
+    exit(1)
+
+if not os.path.exists(sys.argv[1]):
+    raise Exception("Feature file '" + sys.argv[1] + "' do not exist")
+if not os.path.exists(sys.argv[2]):
+    raise Exception("PCM file '" + sys.argv[2] + "' do not exist")
+
+feature_file = sys.argv[1]
+pcm_file = sys.argv[2]     # 16 bit unsigned short PCM samples
+
 # Train a LPCNet model (note not a Wavenet model)
 
 import lpcnet
-import sys
 import numpy as np
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from ulaw import ulaw2lin, lin2ulaw
 import keras.backend as K
 import h5py
-
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
-config = tf.ConfigProto()
 
+config = tf.compat.v1.ConfigProto()
+# Enable GTX 1660 and Tesla T4 to be used for training (possibly many other models too)
 # https://devtalk.nvidia.com/default/topic/1048627/cuda-setup-and-installation/does-the-latest-gtx-1660-model-support-cuda-/
 config.gpu_options.allow_growth = True
-
 # use this option to reserve GPU memory, e.g. for running more than
 # one thing at a time.  Best to disable for GPUs with small memory
 config.gpu_options.per_process_gpu_memory_fraction = 0.44
 
-set_session(tf.Session(config=config))
+set_session(tf.compat.v1.Session(config=config))
 
-nb_epochs = 120
-
-# Try reducing batch_size if you run out of memory on your GPU
-batch_size = 64
-
-model, _, _ = lpcnet.new_lpcnet_model(training=True)
-
+model, _, _ = lpcnet.new_lpcnet_model(training=True, use_gpu=defs['use_gpu'])
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'])
 model.summary()
 
-feature_file = sys.argv[1]
-pcm_file = sys.argv[2]     # 16 bit unsigned short PCM samples
 frame_size = model.frame_size
 nb_features = 55
 nb_used_features = model.nb_used_features
 feature_chunk_size = 15
 pcm_chunk_size = frame_size*feature_chunk_size
+
+# try to create the checkpoint directory
+if not os.path.exists(defs['checkpoints_dir']):
+    os.makedirs(defs['checkpoints_dir'])
+# dump models to disk as we go
+ckname = defs['name'] + '_GA' + str(defs['rnn_units1']) + '_10_GB' + str(defs['rnn_units2']) + '_{epoch:02d}.h5'
+ckname = os.path.join(defs['checkpoints_dir'], ckname)
+checkpoint = ModelCheckpoint(ckname)
 
 # u for unquantised, load 16 bit PCM samples and convert to mu-law
 
@@ -105,9 +129,6 @@ del sig
 del pred
 del in_exc
 
-# dump models to disk as we go
-checkpoint = ModelCheckpoint('./checkpoints/lpcnet30_384_10_G16_{epoch:02d}.h5')
-
 #Set this to True to adapt an existing model (e.g. on new data)
 adaptation = False
 
@@ -124,5 +145,5 @@ else:
     decay = 5e-5
 
 model.compile(optimizer=Adam(lr, amsgrad=True, decay=decay), loss='sparse_categorical_crossentropy')
-model.save_weights('./checkpoints/lpcnet30_384_10_G16_00.h5');
-model.fit([in_data, features, periods], out_exc, batch_size=batch_size, epochs=nb_epochs, validation_split=0.0, callbacks=[checkpoint, sparsify])
+model.save_weights(ckname.replace('{epoch:02d}', '00')) # TODO: consider the number of zeroes
+model.fit([in_data, features, periods], out_exc, batch_size=defs['batch_size'], epochs=defs['epochs'], validation_split=0.0, callbacks=[checkpoint, sparsify])
