@@ -40,6 +40,9 @@ import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto()
 
+# https://devtalk.nvidia.com/default/topic/1048627/cuda-setup-and-installation/does-the-latest-gtx-1660-model-support-cuda-/
+config.gpu_options.allow_growth = True
+
 # use this option to reserve GPU memory, e.g. for running more than
 # one thing at a time.  Best to disable for GPUs with small memory
 config.gpu_options.per_process_gpu_memory_fraction = 0.44
