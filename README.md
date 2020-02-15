@@ -18,43 +18,45 @@ This software is an open source starting point for LPCNet/WaveRNN-based speech s
 You can build the code using:
 
 ```
-./autogen.sh
-./configure
+mkdir build
+cd build
+cmake ..
 make
 ```
-Note that the autogen.sh script is used when building from Git and will automatically download the latest model
-(models are too large to put in Git).
 
-It is highly recommended to set the CFLAGS environment variable to enable AVX or NEON *prior* to running configure, otherwise
-no vectorization will take place and the code will be very slow. On a recent x86 CPU, something like
-```
-export CFLAGS='-O3 -g -mavx2 -mfma'
-```
-should work. On ARM, you can enable Neon with:
-```
-export CFLAGS='-O3 -g -mfpu=neon'
-```
+Use the variable `SIMD_API` in the CMakeLists.txt to control which type SIMD instruction you want to use. By default, AVX2 and FMA is enabled. Disabling SIMD (by commenting `SIMD_API` variable) will disable vectorization and the code will be very slow.
 
-You can test the capabilities of LPCNet using the lpcnet_demo application. To encode a file:
+You can test the capabilities of LPCNet using the `lpcnet_demo` application. To encode a file:
 ```
 ./lpcnet_demo -encode input.pcm compressed.bin
 ```
 where input.pcm is a 16-bit (machine endian) PCM file sampled at 16 kHz. The raw compressed data (no header)
-is written to compressed.bin and consists of 8 bytes per 40-ms packet.
+is written to `compressed.bin` and consists of 8 bytes per 40-ms packet.
 
 To decode:
 ```
 ./lpcnet_demo -decode compressed.bin output.pcm
 ```
-where output.pcm is also 16-bit, 16 kHz PCM.
+where `output.pcm` is also 16-bit, 16 kHz PCM.
 
-The same functionality is available in the form of a library. See include/lpcnet.h for the API.
+Instead of `-encode` and `-decode`, you can also use `-features` and `-synthesis` to disable compression.
+
+The same functionality is available in the form of a library. See `include/lpcnet.h` for the API.
 
 # Training a new model
 
 This codebase is also meant for research and it is possible to train new models. These are the steps to do that:
 
-1. Set up a Keras system with GPU.
+1. Run the docker image `lpc-train:2.0.0` using the script `docker/run.sh`. You can create the image locally using the script `docker/create.sh`. The image uses tensorflow 1.14.0 (with GPU support) and Keras 2.2.4.
+
+1. Compile the C source code:
+
+   ```
+   mkdir build
+   cd build
+   cmake ..
+   make
+   ```
 
 1. Generate training data:
    ```
@@ -64,7 +66,7 @@ This codebase is also meant for research and it is possible to train new models.
 
 1. Now that you have your files, train with:
    ```
-   ./src/train_lpcnet.py features.f32 data.u8
+   ../src/train_lpcnet.py features.f32 data.u8
    ```
    and it will generate an lpcnet*.h5 file for each iteration. If it stops with a
    "Failed to allocate RNN reserve space" message try reducing the *batch\_size* variable in train_lpcnet.py.
@@ -72,19 +74,19 @@ This codebase is also meant for research and it is possible to train new models.
 1. You can synthesise speech with Python and your GPU card:
    ```
    ./dump_data -test test_input.s16 test_features.f32
-   ./src/test_lpcnet.py test_features.f32 test.s16
+   ../src/test_lpcnet.py test_features.f32 test.s16
    ```
    Note the .h5 is hard coded in test_lpcnet.py, modify for your .h5 file.
 
 1. Or with C on a CPU:
-   First extract the model files nnet_data.h and nnet_data.c
+   First extract the model files `model.c` and `model.h`
    ```
-   ./dump_lpcnet.py lpcnet15_384_10_G16_64.h5
+   ./dump_lpcnet.py lpcnet_384_10_G16_120.h5
    ```
-   and move the generated nnet_data.* files to the src/ directory.
-   Then you just need to rebuild the software and use lpcnet_demo as explained above.
+   and move the generated files files to the `src/` directory.
+   Then you just need to rebuild the software and use `lpcnet_demo` as explained above.
 
-# Speech Material for Training 
+# Speech Material for Training
 
 Suitable training material can be obtained from the [McGill University Telecommunications & Signal Processing Laboratory](http://www-mmsp.ece.mcgill.ca/Documents/Data/).  Download the ISO and extract the 16k-LP7 directory, the src/concat.sh script can be used to generate a headerless file of training samples.
 ```
