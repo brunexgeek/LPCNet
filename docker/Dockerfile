@@ -4,6 +4,9 @@ RUN apt update && apt install -y \
     cmake \
     make \
     wget \
+    nano \
+    cgdb \
+    sox \
     file && apt clean
 
 RUN pip3 install keras==2.2.4
