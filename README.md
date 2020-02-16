@@ -24,7 +24,7 @@ cmake ..
 make
 ```
 
-Use the variable `SIMD_API` in the CMakeLists.txt to control which type SIMD instruction you want to use. By default, AVX2 and FMA is enabled. Disabling SIMD (by commenting `SIMD_API` variable) will disable vectorization and the code will be very slow.
+Use the variable `SIMD_API` in the `CMakeLists.txt` to control which type of SIMD instructions you want to use. By default, AVX2 and FMA is enabled. Disabling SIMD (by commenting the `SIMD_API` variable) will disable vectorization and the code will be very slow.
 
 You can test the capabilities of LPCNet using the `lpcnet_demo` application. To encode a file:
 ```
@@ -69,7 +69,7 @@ This codebase is also meant for research and it is possible to train new models.
    ../src/train_lpcnet.py features.f32 data.u8
    ```
    and it will generate an lpcnet*.h5 file for each iteration. If it stops with a
-   "Failed to allocate RNN reserve space" message try reducing the *batch\_size* variable in train_lpcnet.py.
+   "Failed to allocate RNN reserve space" message try reducing the `batch_size` variable in `train_lpcnet.py`.
 
 1. You can synthesise speech with Python and your GPU card:
    ```
