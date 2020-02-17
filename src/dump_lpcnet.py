@@ -25,6 +25,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+defs = {}
+defs['rnn_units1'] = 384
+
+
 import lpcnet
 import sys
 import numpy as np
@@ -209,7 +213,7 @@ def dump_embedding_layer(self, f, hf):
 Embedding.dump_layer = dump_embedding_layer
 
 
-model, _, _ = lpcnet.new_lpcnet_model(rnn_units1=384, use_gpu=False)
+model, _, _ = lpcnet.new_lpcnet_model(rnn_units1=defs['rnn_units1'], use_gpu=False)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['sparse_categorical_accuracy'])
 #model.summary()
 
